@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>footnote · slides</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root { --bg: #111110; --panel: #191918; --ink: #ece9e2; --muted: #918b80; --line: #2b2a27; --accent: #e2a83a; --mark: #5a4413; }
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; }
+  body { margin: 0; background: #000; color: var(--ink); font: 22px/1.5 -apple-system, "Segoe UI", Inter, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  section { width: 1280px; height: 720px; margin: 0 auto; padding: 64px 80px; background: var(--bg); position: relative; overflow: hidden; scroll-snap-align: start; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
+  section::after { content: attr(data-n) " · footnote · Ibrar Yunus"; position: absolute; left: 80px; bottom: 28px; font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+  h1 { font: 600 76px/1.05 Georgia, "Iowan Old Style", serif; margin: 0; letter-spacing: -.02em; }
+  h1 sup, .acc { color: var(--accent); }
+  h2 { font: 600 40px/1.15 Georgia, "Iowan Old Style", serif; margin: 0 0 26px; letter-spacing: -.01em; }
+  .kicker { font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  p { margin: 0 0 16px; } .lead { font-size: 28px; line-height: 1.4; max-width: 900px; } .muted { color: var(--muted); }
+  ul { margin: 0; padding-left: 26px; } li { margin-bottom: 12px; } li::marker { color: var(--accent); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; flex: 1; min-height: 0; }
+  .shot { border: 1px solid var(--line); border-radius: 10px; width: 100%; display: block; }
+  .shotwrap { flex: 1; min-height: 0; display: flex; align-items: flex-start; gap: 36px; }
+  .shotwrap img { max-height: 470px; width: auto; max-width: 760px; }
+  .note { font-size: 19px; color: var(--muted); }
+  .flow { display: flex; align-items: stretch; gap: 10px; margin: 8px 0 26px; }
+  .box { flex: 1; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 14px 16px; font-size: 16px; line-height: 1.4; }
+  .box b { display: block; font-size: 18px; color: var(--accent); margin-bottom: 4px; }
+  .arrow { align-self: center; color: var(--muted); font-size: 22px; }
+  table { border-collapse: collapse; width: 100%; font-size: 20px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); } th { color: var(--muted); font-weight: 500; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; }
+  tr.best td { color: var(--accent); font-weight: 600; }
+  .bar { display: inline-block; height: 10px; border-radius: 5px; background: var(--accent); vertical-align: middle; margin-right: 10px; }
+  .bar.dim { background: var(--line); }
+  .big { font: 600 64px/1 Georgia, serif; color: var(--accent); } .stat { border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; background: var(--panel); } .stat p { font-size: 17px; color: var(--muted); margin: 8px 0 0; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+  a { color: var(--accent); text-decoration: none; }
+  .title { justify-content: center; } .title .lead { margin-top: 22px; color: var(--muted); }
+  .by { margin-top: 44px; font-size: 19px; color: var(--muted); } .by b { color: var(--ink); }
+  @media print { body { background: var(--bg); } }
+</style>
+</head>
+<body>
+
+<section class="title" data-n="1">
+  <div class="kicker">Retrieval-augmented generation · reference build</div>
+  <h1>footnote<sup>1</sup></h1>
+  <p class="lead">Ask your documents a question. Every claim in the answer links to the exact sentence it came from.</p>
+  <p class="by"><b>Ibrar Yunus</b> · AI engineer · <a href="https://ibraryunus.com/ai-engineer">ibraryunus.com/ai-engineer</a> · <a href="https://www.linkedin.com/in/ibrar-yunus/">linkedin.com/in/ibrar-yunus</a> · <a href="https://github.com/IbrarYunus/footnote">github.com/IbrarYunus/footnote</a></p>
+</section>
+
+<section data-n="2">
+  <div class="kicker">The problem</div>
+  <h2>The dangerous answer is the one that reads well.</h2>
+  <div class="cols">
+    <div>
+      <p>"Chat with our documents" is the first thing most companies ask an LLM to do.</p>
+      <p>It fails quietly. The answer is fluent, and one sentence in it came from nowhere. For a handbook, a contract or a runbook, someone acts on that sentence.</p>
+    </div>
+    <div>
+      <p class="acc" style="font-size:26px;font-family:Georgia,serif">One rule: an answer you cannot check is not an answer.</p>
+      <ul>
+        <li>The model may use only what search found.</li>
+        <li>Every claim carries a citation the API has validated.</li>
+        <li>One click shows the source sentence, highlighted in place.</li>
+        <li>When the documents do not cover it, it says so.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section data-n="3">
+  <div class="kicker">Demo · 232-page public staff handbook</div>
+  <h2>An answer, with its receipts.</h2>
+  <div class="shotwrap">
+    <img class="shot" src="screenshots/answer.png" alt="">
+    <div class="note">
+      <p>Left: the answer, streamed. Each chip is a citation returned by the Claude API.</p>
+      <p>Right: the eight passages search found. Cited ones rise to the top; the rest stay visible so you can see what was ignored.</p>
+      <p>Under the answer: search time, time to first word, tokens, cost.</p>
+    </div>
+  </div>
+</section>
+
+<section data-n="4">
+  <div class="kicker">Verification</div>
+  <h2>Click a claim. See the sentence.</h2>
+  <div class="shotwrap">
+    <img class="shot" src="screenshots/citation.png" alt="">
+    <div class="note">
+      <p>Citations are character offsets into the passage, produced and checked by the API. The model cannot cite text that is not there.</p>
+      <p>Prompting a model to type "[1]" gives markers that look right and are sometimes wrong. This does not.</p>
+    </div>
+  </div>
+</section>
+
+<section data-n="5">
+  <div class="kicker">Abstention</div>
+  <h2>"That is not in the documents."</h2>
+  <div class="shotwrap">
+    <img class="shot" src="screenshots/abstain.png" alt="">
+    <div class="note">
+      <p>The handbook has nothing on Christmas parties. The answer says so, names what is missing, and cites the nearby material it did find.</p>
+      <p>The prompt explains why guessing is harmful rather than shouting "never". The eval set includes ten questions like this one.</p>
+    </div>
+  </div>
+</section>
+
+<section data-n="6">
+  <div class="kicker">Architecture</div>
+  <h2>Six hundred lines, no framework.</h2>
+  <div class="flow">
+    <div class="box"><b>Ingest</b>Clean markdown, split on headings, ≤220 words, prefix "Page › Section".</div><div class="arrow">→</div>
+    <div class="box"><b>Index</b>SQLite file. 1,432 passages, 384-d vectors from a local ONNX model.</div><div class="arrow">→</div>
+    <div class="box"><b>Search</b>BM25 + cosine, merged with weighted reciprocal rank fusion. Top 8.</div><div class="arrow">→</div>
+    <div class="box"><b>Answer</b>Passages sent as document blocks, citations on. Streams text + spans.</div><div class="arrow">→</div>
+    <div class="box"><b>UI</b>One HTML file over Server-Sent Events. Also a CLI.</div>
+  </div>
+  <div class="cols" style="font-size:19px">
+    <ul>
+      <li><b>No vector database.</b> 2 MB of vectors; a numpy multiply takes under a millisecond. Worth revisiting past a few hundred thousand passages.</li>
+      <li><b>Local embeddings.</b> No second API key, no per-query cost, documents stay on the machine.</li>
+    </ul>
+    <ul>
+      <li><b>Hybrid search.</b> Vectors miss exact terms; keywords miss paraphrase. Rank fusion needs no score calibration.</li>
+      <li><b>Headings travel with the passage.</b> "You can carry over 240 hours" means nothing to search without "Annual leave".</li>
+    </ul>
+  </div>
+</section>
+
+<section data-n="7">
+  <div class="kicker">Evaluation · search</div>
+  <h2>The eval caught my first hybrid search losing to plain vectors.</h2>
+  <table>
+    <tr><th>Search mode</th><th>Correct passage is #1</th><th>In top 3</th><th>In top 8 (what the model sees)</th><th>MRR</th></tr>
+    <tr><td>Keyword only (BM25)</td><td>28.8%</td><td>55.9%</td><td><span class="bar dim" style="width:129px"></span>64.4%</td><td>0.415</td></tr>
+    <tr><td>Vector only</td><td>44.1%</td><td>67.8%</td><td><span class="bar dim" style="width:169px"></span>84.7%</td><td>0.581</td></tr>
+    <tr><td class="muted">Hybrid, equal weights (first attempt)</td><td class="muted">45.8%</td><td class="muted">71.2%</td><td class="muted"><span class="bar dim" style="width:149px"></span>74.6%</td><td class="muted">0.580</td></tr>
+    <tr class="best"><td>Hybrid, 70/30 towards vectors</td><td>45.8%</td><td>74.6%</td><td><span class="bar" style="width:169px"></span>84.7%</td><td>0.608</td></tr>
+  </table>
+  <p class="note" style="margin-top:22px">59 questions written by Claude from sampled passages, told to avoid the passage's wording. Small, synthetic, and the weights were tuned on it, so read the direction, not the decimals. The point: without the eval, the equal-weight version would have shipped.</p>
+</section>
+
+<section data-n="8">
+  <div class="kicker">Evaluation · answers</div>
+  <h2>Graded answers, including questions with no answer.</h2>
+  <!-- ANSWER_SLIDE -->
+</section>
+
+<section data-n="9">
+  <div class="kicker">What this shows</div>
+  <h2>Skills on display</h2>
+  <div class="cols">
+    <ul>
+      <li>RAG pipeline end to end: cleaning, chunking, embedding, hybrid search, rank fusion</li>
+      <li>Claude API: native citations, streaming, adaptive thinking, structured outputs, refusal fallbacks</li>
+      <li>Evaluation: synthetic question sets, search metrics, LLM-as-judge, abstention tests</li>
+    </ul>
+    <ul>
+      <li>Product sense: the feature is trust, so the UI is built around checking</li>
+      <li>Engineering restraint: SQLite + numpy instead of infrastructure nobody needs yet</li>
+      <li>Python, FastAPI, Server-Sent Events, pytest, GitHub Actions</li>
+    </ul>
+  </div>
+  <p class="note"><b class="acc">Next:</b> cross-encoder reranking, follow-up question rewriting, a human-written eval set, passage-level access control.</p>
+</section>
+
+<section class="title" data-n="10">
+  <div class="kicker">Thank you</div>
+  <h1>Ibrar Yunus</h1>
+  <p class="lead">AI engineer. I build LLM systems that can be checked.</p>
+  <p class="by"><a href="https://ibraryunus.com/ai-engineer">ibraryunus.com/ai-engineer</a><br><a href="https://www.linkedin.com/in/ibrar-yunus/">linkedin.com/in/ibrar-yunus</a><br><a href="https://github.com/IbrarYunus">github.com/IbrarYunus</a> · footnote · frontdesk · groundwork</p>
+</section>
+
+<script>
+  addEventListener("keydown", (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, " ": 1, PageDown: 1, ArrowLeft: -1, ArrowUp: -1, PageUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    scrollBy({ top: step * 720, behavior: "smooth" });
+  });
+</script>
+</body>
+</html>

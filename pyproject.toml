@@ -1,0 +1,36 @@
+[project]
+name = "footnote"
+version = "0.1.0"
+description = "Ask your documents. Every claim in the answer links to the sentence it came from."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ibrar Yunus", email = "yunus.ibrar@gmail.com" }]
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "anthropic>=0.116",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "fastembed>=0.5",
+    "numpy>=1.26",
+    "python-dotenv>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/IbrarYunus/footnote"
+Author = "https://ibraryunus.com/ai-engineer"
+
+[project.scripts]
+footnote = "footnote.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["footnote"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

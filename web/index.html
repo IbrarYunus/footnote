@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>footnote</title>
+<style>
+  :root {
+    --bg: #faf8f4; --panel: #ffffff; --ink: #1c1b19; --muted: #6f6a62; --line: #e4dfd6;
+    --accent: #b7791f; --mark: #fde9b8; --chip: #1c1b19; --chip-ink: #faf8f4; --bad: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110; --panel: #191918; --ink: #ece9e2; --muted: #918b80; --line: #2b2a27;
+      --accent: #e2a83a; --mark: #5a4413; --chip: #e2a83a; --chip-ink: #111110; --bad: #f2b8b5;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 -apple-system, "Segoe UI", Inter, sans-serif; }
+  header { display: flex; align-items: baseline; gap: 14px; padding: 18px 28px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font: 600 20px Georgia, "Iowan Old Style", serif; letter-spacing: -.01em; }
+  header h1 sup { color: var(--accent); font-size: 12px; }
+  header .stats { color: var(--muted); font-size: 13px; }
+  header a { margin-left: auto; color: var(--muted); font-size: 13px; text-decoration: none; }
+  main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0; min-height: calc(100vh - 62px); }
+  section { padding: 24px 28px; }
+  section + section { border-left: 1px solid var(--line); background: var(--panel); }
+  form { display: flex; gap: 8px; }
+  input[type=text] { flex: 1; padding: 11px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: inherit; }
+  input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button { padding: 0 18px; border: 0; border-radius: 8px; background: var(--ink); color: var(--bg); font: 600 14px inherit; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  .modes { display: flex; gap: 6px; margin: 12px 0 0; font-size: 13px; color: var(--muted); align-items: center; }
+  .modes label { padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; cursor: pointer; }
+  .modes input { display: none; }
+  .modes input:checked + span { color: var(--accent); font-weight: 600; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .examples button { background: transparent; color: var(--muted); border: 1px dashed var(--line); font-weight: 400; font-size: 13px; padding: 5px 10px; }
+  #answer { margin-top: 26px; font: 17px/1.7 Georgia, "Iowan Old Style", serif; white-space: pre-wrap; }
+  #answer .block.cited:hover { background: color-mix(in srgb, var(--mark) 45%, transparent); }
+  sup.chip { display: inline-block; min-width: 17px; height: 17px; margin: 0 1px 0 2px; padding: 0 4px; border-radius: 9px; background: var(--chip); color: var(--chip-ink); font: 700 11px/17px -apple-system, sans-serif; text-align: center; cursor: pointer; vertical-align: super; }
+  sup.chip.active { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #meta { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  #meta b { color: var(--ink); font-weight: 600; }
+  .error { color: var(--bad); font: 14px -apple-system, sans-serif; }
+  h2 { margin: 0 0 14px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: var(--bg); }
+  .card.uncited { opacity: .55; }
+  .card.uncited .text { max-height: 3.1em; overflow: hidden; }
+  .card.focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); opacity: 1; }
+  .card .top { display: flex; gap: 8px; align-items: baseline; }
+  .card .num { flex: none; width: 20px; height: 20px; border-radius: 10px; background: var(--chip); color: var(--chip-ink); font: 700 11px/20px -apple-system, sans-serif; text-align: center; }
+  .card.uncited .num { background: var(--line); color: var(--muted); }
+  .card .title { font-weight: 600; font-size: 14px; }
+  .card .ranks { margin: 4px 0 8px; font-size: 12px; color: var(--muted); }
+  .card .ranks a { color: inherit; }
+  .card .text { font-size: 13.5px; white-space: pre-wrap; color: var(--ink); }
+  mark { background: var(--mark); color: inherit; padding: 1px 0; border-radius: 2px; }
+  .empty { color: var(--muted); font-size: 14px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } section + section { border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>footnote<sup>1</sup></h1>
+  <span class="stats" id="stats"></span>
+  <a href="https://github.com/IbrarYunus/footnote">GitHub</a>
+</header>
+<main>
+  <section>
+    <form id="form">
+      <input type="text" id="q" placeholder="Ask the handbook anything" autocomplete="off" autofocus>
+      <button id="go">Ask</button>
+    </form>
+    <div class="modes">Search:
+      <label><input type="radio" name="mode" value="hybrid" checked><span>hybrid</span></label>
+      <label><input type="radio" name="mode" value="bm25"><span>keyword only</span></label>
+      <label><input type="radio" name="mode" value="dense"><span>vector only</span></label>
+    </div>
+    <div class="examples" id="examples"></div>
+    <div id="answer"></div>
+    <div id="meta" hidden></div>
+  </section>
+  <section>
+    <h2>Retrieved passages</h2>
+    <div id="sources"><p class="empty">The passages the search step found will appear here, with the sentences the answer relied on highlighted.</p></div>
+  </section>
+</main>
+<script>
+const EXAMPLES = [
+  "How much annual leave do I earn, and can I carry it over?",
+  "Can I work from another country for a few weeks?",
+  "How do I get reimbursed for a conference?",
+  "What is the dress code for the office Christmas party?",
+];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+
+let hits = [], blocks = {}, order = [];
+
+fetch("/api/stats").then((r) => r.json()).then((s) => {
+  $("stats").textContent = `${s.documents} documents · ${s.chunks} passages · ${s.model}`;
+});
+EXAMPLES.forEach((text) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.textContent = text;
+  b.onclick = () => { $("q").value = text; ask(); };
+  $("examples").append(b);
+});
+$("form").onsubmit = (e) => { e.preventDefault(); ask(); };
+
+function numberFor(doc) {
+  if (!order.includes(doc)) order.push(doc);
+  return order.indexOf(doc) + 1;
+}
+
+function renderAnswer() {
+  const html = Object.keys(blocks).map(Number).sort((a, b) => a - b).map((i) => {
+    const block = blocks[i];
+    const docs = [...new Set(block.citations.map((c) => c.doc))];
+    const chips = docs.map((d) => `<sup class="chip" data-block="${i}" data-doc="${d}">${numberFor(d)}</sup>`).join("");
+    return `<span class="block ${docs.length ? "cited" : ""}">${rich(block.text)}</span>${chips}`;
+  }).join("");
+  $("answer").innerHTML = html;
+}
+
+function highlighted(text, spans) {
+  const sorted = spans.filter((s) => s.start != null).sort((a, b) => a.start - b.start);
+  let out = "", at = 0;
+  for (const { start, end } of sorted) {
+    if (start < at) continue;
+    out += esc(text.slice(at, start)) + "<mark>" + esc(text.slice(start, end)) + "</mark>";
+    at = end;
+  }
+  return out + esc(text.slice(at));
+}
+
+function renderSources(focus) {
+  const cited = {};
+  Object.values(blocks).forEach((b) => b.citations.forEach((c) => (cited[c.doc] ||= []).push(c)));
+  const ranked = hits.map((hit, doc) => ({ hit, doc }))
+    .sort((a, b) => (cited[b.doc] ? 1 : 0) - (cited[a.doc] ? 1 : 0) || a.doc - b.doc);
+  $("sources").innerHTML = ranked.map(({ hit, doc }) => {
+    const spans = focus && focus.doc === doc ? focus.spans : cited[doc] || [];
+    const ranks = [hit.bm25_rank ? `keyword #${hit.bm25_rank}` : "keyword —", hit.dense_rank ? `vector #${hit.dense_rank}` : "vector —"].join(" · ");
+    return `<div class="card ${cited[doc] ? "" : "uncited"} ${focus && focus.doc === doc ? "focus" : ""}" id="card-${doc}">
+      <div class="top"><span class="num">${cited[doc] ? numberFor(doc) : "·"}</span><span class="title" title="${esc(hit.heading)}">${esc(hit.title)}${hit.heading ? " › " + esc(hit.heading.split(" › ").pop()) : ""}</span></div>
+      <div class="ranks">${ranks} · <a href="${esc(hit.url)}" target="_blank" rel="noopener">source</a></div>
+      <div class="text">${highlighted(hit.text, spans)}</div></div>`;
+  }).join("");
+  if (focus) $("card-" + focus.doc).scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+$("answer").onclick = (e) => {
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  document.querySelectorAll(".chip.active").forEach((c) => c.classList.remove("active"));
+  chip.classList.add("active");
+  const doc = Number(chip.dataset.doc);
+  const spans = blocks[chip.dataset.block].citations.filter((c) => c.doc === doc);
+  renderSources({ doc, spans });
+};
+
+async function ask() {
+  const question = $("q").value.trim();
+  if (question.length < 3) return;
+  const mode = document.querySelector("input[name=mode]:checked").value;
+  hits = []; blocks = {}; order = [];
+  $("answer").innerHTML = ""; $("meta").hidden = true; $("go").disabled = true;
+  $("sources").innerHTML = '<p class="empty">Searching…</p>';
+  let retrievalMs = 0;
+  try {
+    const response = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, mode }) });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop();
+      for (const part of parts) {
+        if (!part.startsWith("data: ")) continue;
+        const event = JSON.parse(part.slice(6));
+        if (event.type === "retrieval") { hits = event.hits; retrievalMs = event.ms; renderSources(); }
+        else if (event.type === "text" || event.type === "cite") {
+          const block = (blocks[event.block] ||= { text: "", citations: [] });
+          if (event.type === "text") block.text += event.text; else block.citations.push(event);
+          renderAnswer();
+        }
+        else if (event.type === "error") $("answer").innerHTML = `<span class="error">${esc(event.message)}</span>`;
+        else if (event.type === "done") {
+          renderSources();
+          const sentences = Object.values(blocks).filter((b) => b.text.trim());
+          const citedCount = sentences.filter((b) => b.citations.length).length;
+          $("meta").innerHTML = `<span>search <b>${retrievalMs} ms</b></span><span>first word <b>${(event.first_token_ms / 1000).toFixed(1)} s</b></span><span>total <b>${(event.total_ms / 1000).toFixed(1)} s</b></span><span>tokens <b>${event.input_tokens} in / ${event.output_tokens} out</b></span>${event.cost_usd != null ? `<span>cost <b>$${event.cost_usd.toFixed(4)}</b></span>` : ""}<span>cited passages <b>${order.length} of ${hits.length}</b></span><span>text blocks with a citation <b>${citedCount} of ${sentences.length}</b></span>`;
+          $("meta").hidden = false;
+        }
+      }
+    }
+  } catch (error) {
+    $("answer").innerHTML = `<span class="error">${esc(String(error))}</span>`;
+  }
+  $("go").disabled = false;
+  window.dispatchEvent(new Event("footnote:done"));
+}
+
+const params = new URLSearchParams(location.search);
+if (params.get("mode")) document.querySelector(`input[value=${CSS.escape(params.get("mode"))}]`).checked = true;
+if (params.get("q")) { $("q").value = params.get("q"); ask(); }
+</script>
+</body>
+</html>
