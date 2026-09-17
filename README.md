@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Ask your documents a question. Every claim in the answer links to the exact sentence it came from.</strong><br>
-  Hybrid search, Claude's native citations, and an eval suite that says how often it is right.
+  Retrieval-augmented generation (RAG) done properly: hybrid search, Claude's native citations, and an eval suite that says how often it is right.
 </p>
 
 <p align="center">
@@ -189,6 +189,6 @@ Corpus: the [18F Handbook](https://github.com/18F/handbook), a work of the Unite
 
 [ibraryunus.com/ai-engineer](https://ibraryunus.com/ai-engineer) · [LinkedIn](https://www.linkedin.com/in/ibrar-yunus/) · [GitHub](https://github.com/IbrarYunus)
 
-Also see [groundwork](https://github.com/IbrarYunus/groundwork) (an agent that audits a codebase) and [frontdesk](https://github.com/IbrarYunus/frontdesk) (a support agent that can act on orders, with the money rules enforced in code).
+footnote is the RAG piece of a small set of agentic AI and RAG projects. For the agentic side, see [groundwork](https://github.com/IbrarYunus/groundwork) (an agent that audits a codebase) and [frontdesk](https://github.com/IbrarYunus/frontdesk) (a support agent that can act on orders, with the money rules enforced in code).
 
 MIT licensed.
