@@ -23,7 +23,8 @@
   header h1 sup { color: var(--accent); font-size: 12px; }
   header .stats { color: var(--muted); font-size: 13px; }
   header a { margin-left: auto; color: var(--muted); font-size: 13px; text-decoration: none; }
-  main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0; min-height: calc(100vh - 62px); }
+  #demo { padding: 7px 28px; background: var(--mark); font-size: 12.5px; border-bottom: 1px solid var(--line); }
+  main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); min-height: calc(100vh - 62px); }
   section { padding: 24px 28px; }
   section + section { border-left: 1px solid var(--line); background: var(--panel); }
   form { display: flex; gap: 8px; }
@@ -38,6 +39,7 @@
   .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .examples button { background: transparent; color: var(--muted); border: 1px dashed var(--line); font-weight: 400; font-size: 13px; padding: 5px 10px; }
   #answer { margin-top: 26px; font: 17px/1.7 Georgia, "Iowan Old Style", serif; white-space: pre-wrap; }
+  #answer .working { color: var(--muted); font: italic 14px -apple-system, sans-serif; }
   #answer .block.cited:hover { background: color-mix(in srgb, var(--mark) 45%, transparent); }
   sup.chip { display: inline-block; min-width: 17px; height: 17px; margin: 0 1px 0 2px; padding: 0 4px; border-radius: 9px; background: var(--chip); color: var(--chip-ink); font: 700 11px/17px -apple-system, sans-serif; text-align: center; cursor: pointer; vertical-align: super; }
   sup.chip.active { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -45,6 +47,14 @@
   #meta b { color: var(--ink); font-weight: 600; }
   .error { color: var(--bad); font: 14px -apple-system, sans-serif; }
   h2 { margin: 0 0 14px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  h2.second { margin-top: 24px; }
+  .step { border-left: 2px solid var(--line); margin-left: 6px; padding: 0 0 12px 14px; position: relative; font-size: 13.5px; }
+  .step::before { content: ""; position: absolute; left: -5px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .step.note::before { background: var(--muted); }
+  .step.note { color: var(--muted); font-style: italic; }
+  .step code { font: 600 12.5px ui-monospace, Menlo, monospace; }
+  .step .q { color: var(--accent); }
+  .step .sub { color: var(--muted); font-size: 12px; }
   .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: var(--bg); }
   .card.uncited { opacity: .55; }
   .card.uncited .text { max-height: 3.1em; overflow: hidden; }
@@ -67,13 +77,14 @@
   <span class="stats" id="stats"></span>
   <a href="https://github.com/IbrarYunus/footnote">GitHub</a>
 </header>
+<div id="demo" hidden><b>Demo mode.</b> No API key is set, so the model's replies are scripted for the example questions. The searches, the passages and the citation matching are real.</div>
 <main>
   <section>
     <form id="form">
       <input type="text" id="q" placeholder="Ask the handbook anything" autocomplete="off" autofocus>
       <button id="go">Ask</button>
     </form>
-    <div class="modes">Search:
+    <div class="modes">Search tool uses:
       <label><input type="radio" name="mode" value="hybrid" checked><span>hybrid</span></label>
       <label><input type="radio" name="mode" value="bm25"><span>keyword only</span></label>
       <label><input type="radio" name="mode" value="dense"><span>vector only</span></label>
@@ -83,31 +94,28 @@
     <div id="meta" hidden></div>
   </section>
   <section>
-    <h2>Retrieved passages</h2>
-    <div id="sources"><p class="empty">The passages the search step found will appear here, with the sentences the answer relied on highlighted.</p></div>
+    <h2>What the agent did</h2>
+    <div id="steps"><p class="empty">The agent decides what to search for. Each search, and its reason for searching again, appears here.</p></div>
+    <h2 class="second">Passages it was shown</h2>
+    <div id="sources"><p class="empty">Passages the agent's searches returned, with the sentences the answer relied on highlighted.</p></div>
   </section>
 </main>
 <script>
-const EXAMPLES = [
-  "How much annual leave do I earn, and can I carry it over?",
-  "Can I work from another country for a few weeks?",
-  "How do I get reimbursed for a conference?",
-  "What is the dress code for the office Christmas party?",
-];
 const $ = (id) => document.getElementById(id);
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
-let hits = [], blocks = {}, order = [];
+let hits = [], blocks = {}, order = [], lookups = 0;
 
 fetch("/api/stats").then((r) => r.json()).then((s) => {
   $("stats").textContent = `${s.documents} documents · ${s.chunks} passages · ${s.model}`;
-});
-EXAMPLES.forEach((text) => {
-  const b = document.createElement("button");
-  b.type = "button"; b.textContent = text;
-  b.onclick = () => { $("q").value = text; ask(); };
-  $("examples").append(b);
+  $("demo").hidden = !s.demo;
+  s.examples.forEach((text) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = text;
+    b.onclick = () => { $("q").value = text; ask(); };
+    $("examples").append(b);
+  });
 });
 $("form").onsubmit = (e) => { e.preventDefault(); ask(); };
 
@@ -117,13 +125,13 @@ function numberFor(doc) {
 }
 
 function renderAnswer() {
-  const html = Object.keys(blocks).map(Number).sort((a, b) => a - b).map((i) => {
+  const keys = Object.keys(blocks).map(Number).sort((a, b) => a - b);
+  $("answer").innerHTML = keys.map((i) => {
     const block = blocks[i];
     const docs = [...new Set(block.citations.map((c) => c.doc))];
     const chips = docs.map((d) => `<sup class="chip" data-block="${i}" data-doc="${d}">${numberFor(d)}</sup>`).join("");
     return `<span class="block ${docs.length ? "cited" : ""}">${rich(block.text)}</span>${chips}`;
-  }).join("");
-  $("answer").innerHTML = html;
+  }).join("") || '<span class="working">Researching…</span>';
 }
 
 function highlighted(text, spans) {
@@ -137,6 +145,13 @@ function highlighted(text, spans) {
   return out + esc(text.slice(at));
 }
 
+function addStep(html, kind = "") {
+  if ($("steps").querySelector(".empty")) $("steps").innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "step " + kind; div.innerHTML = html;
+  $("steps").append(div);
+}
+
 function renderSources(focus) {
   const cited = {};
   Object.values(blocks).forEach((b) => b.citations.forEach((c) => (cited[c.doc] ||= []).push(c)));
@@ -144,12 +159,14 @@ function renderSources(focus) {
     .sort((a, b) => (cited[b.doc] ? 1 : 0) - (cited[a.doc] ? 1 : 0) || a.doc - b.doc);
   $("sources").innerHTML = ranked.map(({ hit, doc }) => {
     const spans = focus && focus.doc === doc ? focus.spans : cited[doc] || [];
-    const ranks = [hit.bm25_rank ? `keyword #${hit.bm25_rank}` : "keyword —", hit.dense_rank ? `vector #${hit.dense_rank}` : "vector —"].join(" · ");
+    const ranks = hit.bm25_rank || hit.dense_rank
+      ? [hit.bm25_rank ? `keyword #${hit.bm25_rank}` : "keyword —", hit.dense_rank ? `vector #${hit.dense_rank}` : "vector —"].join(" · ")
+      : "read from page";
     return `<div class="card ${cited[doc] ? "" : "uncited"} ${focus && focus.doc === doc ? "focus" : ""}" id="card-${doc}">
       <div class="top"><span class="num">${cited[doc] ? numberFor(doc) : "·"}</span><span class="title" title="${esc(hit.heading)}">${esc(hit.title)}${hit.heading ? " › " + esc(hit.heading.split(" › ").pop()) : ""}</span></div>
-      <div class="ranks">${ranks} · <a href="${esc(hit.url)}" target="_blank" rel="noopener">source</a></div>
+      <div class="ranks">search ${hit.lookup} · ${ranks} · <a href="${esc(hit.url)}" target="_blank" rel="noopener">source</a></div>
       <div class="text">${highlighted(hit.text, spans)}</div></div>`;
-  }).join("");
+  }).join("") || '<p class="empty">Nothing yet.</p>';
   if (focus) $("card-" + focus.doc).scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -163,14 +180,45 @@ $("answer").onclick = (e) => {
   renderSources({ doc, spans });
 };
 
+function handle(event) {
+  if (event.type === "text" || event.type === "cite") {
+    const block = (blocks[event.block] ||= { text: "", citations: [] });
+    if (event.type === "text") block.text += event.text; else block.citations.push(event);
+    renderAnswer();
+  } else if (event.type === "interim") {
+    // This turn went on to call a tool, so its text was a working note, not the answer.
+    const keys = Object.keys(blocks).filter((k) => Math.floor(k / 1000) === event.step);
+    const note = keys.map((k) => blocks[k].text).join("").trim();
+    keys.forEach((k) => delete blocks[k]);
+    if (note) addStep(esc(note), "note");
+    renderAnswer();
+  } else if (event.type === "lookup") {
+    lookups += 1;
+    const what = event.tool === "search_handbook" ? `<code>search</code> <span class="q">“${esc(event.input.query)}”</span>` : `<code>read page</code> <span class="q">${esc(event.input.page)}</span>`;
+    addStep(`${lookups}. ${what}<div class="sub">${event.hits.length} new passage${event.hits.length === 1 ? "" : "s"} · ${event.ms} ms</div>`);
+    event.hits.forEach((hit) => (hits[hit.doc] = { ...hit, lookup: lookups }));
+    renderSources();
+  } else if (event.type === "error") {
+    $("answer").innerHTML = `<span class="error">${esc(event.message)}</span>`;
+  } else if (event.type === "done") {
+    renderSources();
+    const written = Object.values(blocks).filter((b) => b.text.trim());
+    const citedCount = written.filter((b) => b.citations.length).length;
+    const cost = event.cost_usd != null && event.input_tokens ? `<span>cost <b>$${event.cost_usd.toFixed(4)}</b></span>` : "";
+    const tokens = event.input_tokens ? `<span>tokens <b>${event.input_tokens} in / ${event.output_tokens} out</b></span>` : "";
+    $("meta").innerHTML = `<span>model turns <b>${event.steps}</b></span><span>searches <b>${lookups}</b></span><span>total <b>${(event.total_ms / 1000).toFixed(1)} s</b></span>${tokens}${cost}<span>passages cited <b>${order.length} of ${hits.length}</b></span><span>answer parts with a citation <b>${citedCount} of ${written.length}</b></span>`;
+    $("meta").hidden = false;
+  }
+}
+
 async function ask() {
   const question = $("q").value.trim();
   if (question.length < 3) return;
   const mode = document.querySelector("input[name=mode]:checked").value;
-  hits = []; blocks = {}; order = [];
-  $("answer").innerHTML = ""; $("meta").hidden = true; $("go").disabled = true;
-  $("sources").innerHTML = '<p class="empty">Searching…</p>';
-  let retrievalMs = 0;
+  hits = []; blocks = {}; order = []; lookups = 0;
+  $("meta").hidden = true; $("go").disabled = true;
+  $("steps").innerHTML = ""; $("sources").innerHTML = '<p class="empty">Nothing yet.</p>';
+  renderAnswer();
   try {
     const response = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, mode }) });
     const reader = response.body.getReader();
@@ -182,24 +230,7 @@ async function ask() {
       buffer += decoder.decode(value, { stream: true });
       const parts = buffer.split("\n\n");
       buffer = parts.pop();
-      for (const part of parts) {
-        if (!part.startsWith("data: ")) continue;
-        const event = JSON.parse(part.slice(6));
-        if (event.type === "retrieval") { hits = event.hits; retrievalMs = event.ms; renderSources(); }
-        else if (event.type === "text" || event.type === "cite") {
-          const block = (blocks[event.block] ||= { text: "", citations: [] });
-          if (event.type === "text") block.text += event.text; else block.citations.push(event);
-          renderAnswer();
-        }
-        else if (event.type === "error") $("answer").innerHTML = `<span class="error">${esc(event.message)}</span>`;
-        else if (event.type === "done") {
-          renderSources();
-          const sentences = Object.values(blocks).filter((b) => b.text.trim());
-          const citedCount = sentences.filter((b) => b.citations.length).length;
-          $("meta").innerHTML = `<span>search <b>${retrievalMs} ms</b></span><span>first word <b>${(event.first_token_ms / 1000).toFixed(1)} s</b></span><span>total <b>${(event.total_ms / 1000).toFixed(1)} s</b></span><span>tokens <b>${event.input_tokens} in / ${event.output_tokens} out</b></span>${event.cost_usd != null ? `<span>cost <b>$${event.cost_usd.toFixed(4)}</b></span>` : ""}<span>cited passages <b>${order.length} of ${hits.length}</b></span><span>text blocks with a citation <b>${citedCount} of ${sentences.length}</b></span>`;
-          $("meta").hidden = false;
-        }
-      }
+      for (const part of parts) if (part.startsWith("data: ")) handle(JSON.parse(part.slice(6)));
     }
   } catch (error) {
     $("answer").innerHTML = `<span class="error">${esc(String(error))}</span>`;
@@ -207,10 +238,6 @@ async function ask() {
   $("go").disabled = false;
   window.dispatchEvent(new Event("footnote:done"));
 }
-
-const params = new URLSearchParams(location.search);
-if (params.get("mode")) document.querySelector(`input[value=${CSS.escape(params.get("mode"))}]`).checked = true;
-if (params.get("q")) { $("q").value = params.get("q"); ask(); }
 </script>
 </body>
 </html>

@@ -42,9 +42,9 @@
 <body>
 
 <section class="title" data-n="1">
-  <div class="kicker">Retrieval-augmented generation · reference build</div>
+  <div class="kicker">Agentic AI · agentic RAG · reference build</div>
   <h1>footnote<sup>1</sup></h1>
-  <p class="lead">Ask your documents a question. Every claim in the answer links to the exact sentence it came from.</p>
+  <p class="lead">An AI research agent for your documents. It decides what to search for, searches again when results are thin, and every claim links to the exact sentence it came from.</p>
   <p class="by"><b>Ibrar Yunus</b> · AI engineer · <a href="https://ibraryunus.com/ai-engineer">ibraryunus.com/ai-engineer</a> · <a href="https://www.linkedin.com/in/ibrar-yunus/">linkedin.com/in/ibrar-yunus</a> · <a href="https://github.com/IbrarYunus/footnote">github.com/IbrarYunus/footnote</a></p>
 </section>
 
@@ -54,12 +54,14 @@
   <div class="cols">
     <div>
       <p>"Chat with our documents" is the first thing most companies ask an LLM to do.</p>
-      <p>It fails quietly. The answer is fluent, and one sentence in it came from nowhere. For a handbook, a contract or a runbook, someone acts on that sentence.</p>
+      <p>The usual build is a fixed pipeline: search once with the user's words, paste the results into a prompt. A two-part question gets half an answer.</p>
+      <p>And it fails quietly. The answer is fluent, and one sentence in it came from nowhere. Someone acts on that sentence.</p>
     </div>
     <div>
       <p class="acc" style="font-size:26px;font-family:Georgia,serif">One rule: an answer you cannot check is not an answer.</p>
       <ul>
-        <li>The model may use only what search found.</li>
+        <li>An agent plans the research: it picks queries, splits the question, retries.</li>
+        <li>It may use only what its tools returned.</li>
         <li>Every claim carries a citation the API has validated.</li>
         <li>One click shows the source sentence, highlighted in place.</li>
         <li>When the documents do not cover it, it says so.</li>
@@ -74,9 +76,9 @@
   <div class="shotwrap">
     <img class="shot" src="screenshots/answer.png" alt="">
     <div class="note">
-      <p>Left: the answer, streamed. Each chip is a citation returned by the Claude API.</p>
-      <p>Right: the eight passages search found. Cited ones rise to the top; the rest stay visible so you can see what was ignored.</p>
-      <p>Under the answer: search time, time to first word, tokens, cost.</p>
+      <p>A two-part question. The agent ran two searches, in the handbook's wording, one per part.</p>
+      <p>Right: its working note, each query, and the passages that came back. Cited ones rise to the top; the rest stay visible so you can see what it ignored.</p>
+      <p>Left: the answer, streamed. Each chip is a citation returned by the API.</p>
     </div>
   </div>
 </section>
@@ -87,7 +89,7 @@
   <div class="shotwrap">
     <img class="shot" src="screenshots/citation.png" alt="">
     <div class="note">
-      <p>Citations are character offsets into the passage, produced and checked by the API. The model cannot cite text that is not there.</p>
+      <p>Search results go back to the model one sentence per block. The API returns which result and which sentences each claim rests on, and checks them. The model cannot cite text that is not there.</p>
       <p>Prompting a model to type "[1]" gives markers that look right and are sometimes wrong. This does not.</p>
     </div>
   </div>
@@ -99,7 +101,7 @@
   <div class="shotwrap">
     <img class="shot" src="screenshots/abstain.png" alt="">
     <div class="note">
-      <p>The handbook has nothing on Christmas parties. The answer says so, names what is missing, and cites the nearby material it did find.</p>
+      <p>The handbook has nothing on Christmas parties. The agent searched for a dress code, tried the party angle, then stopped. The answer says what is missing and cites the nearby material it did find.</p>
       <p>The prompt explains why guessing is harmful rather than shouting "never". The eval set includes ten questions like this one.</p>
     </div>
   </div>
@@ -107,12 +109,12 @@
 
 <section data-n="6">
   <div class="kicker">Architecture</div>
-  <h2>Six hundred lines, no framework.</h2>
+  <h2>An agent loop over a search tool. No framework.</h2>
   <div class="flow">
-    <div class="box"><b>Ingest</b>Clean markdown, split on headings, ≤220 words, prefix "Page › Section".</div><div class="arrow">→</div>
-    <div class="box"><b>Index</b>SQLite file. 1,432 passages, 384-d vectors from a local ONNX model.</div><div class="arrow">→</div>
-    <div class="box"><b>Search</b>BM25 + cosine, merged with weighted reciprocal rank fusion. Top 8.</div><div class="arrow">→</div>
-    <div class="box"><b>Answer</b>Passages sent as document blocks, citations on. Streams text + spans.</div><div class="arrow">→</div>
+    <div class="box"><b>Agent loop</b>Claude with two tools, max six turns. It chooses queries and when to stop.</div><div class="arrow">⇄</div>
+    <div class="box"><b>search_handbook</b>BM25 + vectors, weighted rank fusion. Top 5 it has not seen yet.</div>
+    <div class="box"><b>read_page</b>All passages of one page, when a result is cut off.</div><div class="arrow">→</div>
+    <div class="box"><b>Cited answer</b>Results return as sentence blocks with citations on. Streams text + spans.</div><div class="arrow">→</div>
     <div class="box"><b>UI</b>One HTML file over Server-Sent Events. Also a CLI.</div>
   </div>
   <div class="cols" style="font-size:19px">
@@ -131,19 +133,33 @@
   <div class="kicker">Evaluation · search</div>
   <h2>The eval caught my first hybrid search losing to plain vectors.</h2>
   <table>
-    <tr><th>Search mode</th><th>Correct passage is #1</th><th>In top 3</th><th>In top 8 (what the model sees)</th><th>MRR</th></tr>
+    <tr><th>Search mode</th><th>Correct passage is #1</th><th>In top 3</th><th>In top 8</th><th>MRR</th></tr>
     <tr><td>Keyword only (BM25)</td><td>28.8%</td><td>55.9%</td><td><span class="bar dim" style="width:129px"></span>64.4%</td><td>0.415</td></tr>
     <tr><td>Vector only</td><td>44.1%</td><td>67.8%</td><td><span class="bar dim" style="width:169px"></span>84.7%</td><td>0.581</td></tr>
     <tr><td class="muted">Hybrid, equal weights (first attempt)</td><td class="muted">45.8%</td><td class="muted">71.2%</td><td class="muted"><span class="bar dim" style="width:149px"></span>74.6%</td><td class="muted">0.580</td></tr>
     <tr class="best"><td>Hybrid, 70/30 towards vectors</td><td>45.8%</td><td>74.6%</td><td><span class="bar" style="width:169px"></span>84.7%</td><td>0.608</td></tr>
   </table>
-  <p class="note" style="margin-top:22px">59 questions written by Claude from sampled passages, told to avoid the passage's wording. Small, synthetic, and the weights were tuned on it, so read the direction, not the decimals. The point: without the eval, the equal-weight version would have shipped.</p>
+  <p class="note" style="margin-top:22px">One search call per question, the floor the agent starts from. 59 questions written by Claude from sampled passages, told to avoid the passage's wording. Small, synthetic, and the weights were tuned on it, so read the direction, not the decimals. The point: without the eval, the equal-weight version would have shipped.</p>
 </section>
 
 <section data-n="8">
   <div class="kicker">Evaluation · answers</div>
-  <h2>Graded answers, including questions with no answer.</h2>
-  <!-- ANSWER_SLIDE -->
+  <h2>What is measured, and what is not yet.</h2>
+  <div class="cols">
+    <div>
+      <p><b class="acc">Measured:</b> the search tool, on 59 questions (previous slide), and the pipeline code, by unit tests in CI.</p>
+      <p><b class="acc">Built, not yet run:</b> the agent eval. 59 answerable questions plus 10 the handbook cannot answer. A second model grades each answer as correct, partial, wrong or abstained.</p>
+      <p class="note">No answer-quality numbers are claimed until that suite has run on the agentic version.</p>
+    </div>
+    <ul>
+      <li>Was the right passage ever retrieved, across all searches?</li>
+      <li>Did the answer cite it?</li>
+      <li>What share of the answer text carries a citation?</li>
+      <li>Did it abstain on the unanswerable ones?</li>
+      <li>Searches per question, latency, cost.</li>
+    </ul>
+  </div>
+  <p class="note">Screenshots in this deck are from demo mode: scripted model turns, real searches, real citation matching.</p>
 </section>
 
 <section data-n="9">
@@ -151,8 +167,9 @@
   <h2>Skills on display</h2>
   <div class="cols">
     <ul>
-      <li>RAG pipeline end to end: cleaning, chunking, embedding, hybrid search, rank fusion</li>
-      <li>Claude API: native citations, streaming, adaptive thinking, structured outputs, refusal fallbacks</li>
+      <li>Agentic AI: a tool-using research loop with step limits, retries and a stop rule</li>
+      <li>RAG end to end: cleaning, chunking, embedding, hybrid search, rank fusion</li>
+      <li>Claude API: tool use, citations on tool results, streaming, structured outputs</li>
       <li>Evaluation: synthetic question sets, search metrics, LLM-as-judge, abstention tests</li>
     </ul>
     <ul>

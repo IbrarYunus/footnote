@@ -82,13 +82,13 @@ def judge(question: str, reference: str, text: str) -> Verdict:
 
 
 def run_one(idx: index.Index, item: dict) -> dict:
-    hits = idx.search(item["question"])
-    result = answer(item["question"], hits)
+    result = answer(item["question"], idx)
+    shown = [passage["id"] for passage in result["passages"]]
     answerable = "reference_answer" in item
     reference = item.get("reference_answer", "(none: the documents do not cover this, so the only right response is to abstain)")
     verdict = judge(item["question"], reference, result["text"])
     cited_chars = sum(len(b["text"]) for b in result["blocks"] if b["citations"])
-    cited_docs = {hits[c["doc"]].id for b in result["blocks"] for c in b["citations"]}
+    cited_docs = {shown[c["doc"]] for b in result["blocks"] for c in b["citations"]}
     return {
         "question": item["question"],
         "answerable": answerable,
@@ -96,7 +96,8 @@ def run_one(idx: index.Index, item: dict) -> dict:
         "verdict": verdict.verdict,
         "reason": verdict.reason,
         "cited_share": round(cited_chars / max(len(result["text"]), 1), 3),
-        "gold_retrieved": answerable and gold_id(idx, item) in {hit.id for hit in hits},
+        "gold_retrieved": answerable and gold_id(idx, item) in shown,
+        "searches": len(result["lookups"]),
         "cited_gold": answerable and gold_id(idx, item) in cited_docs,
         "citations": sum(len(b["citations"]) for b in result["blocks"]),
         "cost_usd": result["cost_usd"],

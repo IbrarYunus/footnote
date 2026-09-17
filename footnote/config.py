@@ -8,7 +8,9 @@ load_dotenv(ROOT / ".env")
 
 MODEL = os.environ.get("FOOTNOTE_MODEL", "claude-opus-5")
 JUDGE_MODEL = os.environ.get("FOOTNOTE_JUDGE_MODEL", "claude-haiku-4-5")
-EFFORT = os.environ.get("FOOTNOTE_EFFORT", "low")
+EFFORT = os.environ.get("FOOTNOTE_EFFORT", "medium")
+# Demo mode swaps the model for scripted replies. Search, tools and citations still run for real.
+DEMO = os.environ.get("FOOTNOTE_DEMO") == "1" or not os.environ.get("ANTHROPIC_API_KEY")
 EMBED_MODEL = os.environ.get("FOOTNOTE_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 INDEX_PATH = Path(os.environ.get("FOOTNOTE_INDEX", ROOT / "data" / "index.db"))
 SOURCE_URL_BASE = os.environ.get(
@@ -16,6 +18,9 @@ SOURCE_URL_BASE = os.environ.get(
 )
 
 TOP_K = 8
+SEARCH_K = 5
+PAGE_LIMIT = 12
+MAX_STEPS = 6
 CANDIDATES = 50
 # Tuned on evals/golden.jsonl: keyword search is the weaker signal on this corpus, so it gets less say.
 RRF_K = 10

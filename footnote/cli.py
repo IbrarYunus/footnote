@@ -34,8 +34,11 @@ def main():
         from . import index
         from .answer import answer
 
-        hits = index.load().search(args.question, mode=args.mode)
-        result = answer(args.question, hits)
+        result = answer(args.question, index.load(), mode=args.mode)
+        hits = result["passages"]
+        for number, lookup in enumerate(result["lookups"], 1):
+            print(f"  {number}. {lookup['tool']} {next(iter(lookup['input'].values()))!r} -> {lookup['new']} new passages")
+        print()
         cited: list[int] = []
         for block in result["blocks"]:
             marks = ""
@@ -46,7 +49,8 @@ def main():
             print(block["text"] + marks, end="")
         print("\n")
         for number, doc in enumerate(cited, 1):
-            print(f"[{number}] {hits[doc].chunk.header}  ({hits[doc].chunk.doc_path})")
+            heading = f" › {hits[doc]['heading']}" if hits[doc]["heading"] else ""
+            print(f"[{number}] {hits[doc]['title']}{heading}  ({hits[doc]['doc_path']})")
 
     elif args.command == "serve":
         import uvicorn

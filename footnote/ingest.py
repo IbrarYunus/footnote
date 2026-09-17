@@ -45,7 +45,7 @@ def clean_markdown(raw: str) -> tuple[str | None, str]:
     raw = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", raw)
     raw = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", raw)
     raw = re.sub(r"<[^>]+>", "", raw)
-    raw = re.sub(r"\\([*_#\[\]()`>~-])", r"\1", raw)
+    raw = re.sub(r"\\([^\w\s])", r"\1", raw)
     raw = re.sub(r"(?<![\w*_])(\*{1,3}|_{1,3})(\S(?:.*?\S)?)\1(?![\w*_])", r"\2", raw)
     raw = re.sub(r"[ \t]+\n", "\n", raw)
     return title, raw.strip()

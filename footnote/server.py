@@ -1,5 +1,4 @@
 import json
-import time
 from functools import lru_cache
 
 import anthropic
@@ -7,11 +6,18 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from . import config, index
+from . import config, demo, index
 from .answer import stream_answer
 
 app = FastAPI(title="footnote")
 WEB = config.ROOT / "web"
+
+EXAMPLES = [
+    "How much annual leave do I earn, and can I carry it over?",
+    "Can I work from another country for a few weeks?",
+    "How do I get reimbursed for a conference?",
+    "What is the dress code for the office Christmas party?",
+]
 
 
 @lru_cache(maxsize=1)
@@ -45,22 +51,17 @@ def stats():
         "chunks": len(idx.chunks),
         "documents": len({c.doc_path for c in idx.chunks}),
         "embed_model": idx.embed_model,
-        "model": config.MODEL,
+        "model": demo.MODEL_NAME if config.DEMO else config.MODEL,
+        "demo": config.DEMO,
+        "examples": demo.EXAMPLES if config.DEMO else EXAMPLES,
     }
 
 
 @app.post("/api/ask")
 def ask(body: Ask):
     def events():
-        started = time.perf_counter()
-        hits = get_index().search(body.question, mode=body.mode)
-        yield _sse({
-            "type": "retrieval",
-            "ms": round((time.perf_counter() - started) * 1000),
-            "hits": [hit.to_dict() for hit in hits],
-        })
         try:
-            for event in stream_answer(body.question, hits):
+            for event in stream_answer(body.question, get_index(), body.mode):
                 yield _sse(event)
         except anthropic.AuthenticationError:
             yield _sse({"type": "error", "message": "ANTHROPIC_API_KEY is missing or invalid."})
