@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/answer.png" alt="footnote answering a question about annual leave. The answer on the left has numbered citation chips; the passages on the right have the cited sentences highlighted." width="920">
+<!-- SHOT   <img src="docs/screenshots/answer.png" alt="footnote answering a question about annual leave. The answer on the left has numbered citation chips; the passages on the right have the cited sentences highlighted." width="920"> -->
 </p>
 
 ---
@@ -39,26 +39,26 @@ The demo corpus is the real [18F / TTS staff handbook](https://github.com/18F/ha
 ### Answers with sentence-level citations
 
 Each numbered chip is a citation returned by the Claude API, not text the model typed. The API guarantees the quoted span exists in the source passage, so a citation cannot point at a sentence that is not there.
-
-<img src="docs/screenshots/answer.png" alt="An answer about annual leave with citation chips after each claim" width="920">
+<!-- SHOT 
+<img src="docs/screenshots/answer.png" alt="An answer about annual leave with citation chips after each claim" width="920"> -->
 
 ### Click a citation, see the sentence
 
 Clicking a chip scrolls to the passage and highlights the exact characters the claim rests on. The "source" link opens the original page.
-
-<img src="docs/screenshots/citation.png" alt="A passage card focused, with the cited sentence highlighted in amber" width="920">
+<!-- SHOT 
+<img src="docs/screenshots/citation.png" alt="A passage card focused, with the cited sentence highlighted in amber" width="920"> -->
 
 ### Says "not in the documents" instead of guessing
 
 Ask about something the handbook does not cover and it tells you what is missing and what it did find nearby. The nearby material is still cited.
-
-<img src="docs/screenshots/abstain.png" alt="footnote declining to answer a question about a Christmas party dress code" width="920">
+<!-- SHOT 
+<img src="docs/screenshots/abstain.png" alt="footnote declining to answer a question about a Christmas party dress code" width="920"> -->
 
 ### Shows its search
 
 Every passage shows where keyword search and vector search each ranked it. Switch between hybrid, keyword-only and vector-only to see how the result list changes for the same question.
-
-<img src="docs/screenshots/keyword-only.png" alt="Keyword-only search results with rank labels" width="920">
+<!-- SHOT 
+<img src="docs/screenshots/keyword-only.png" alt="Keyword-only search results with rank labels" width="920"> -->
 
 ### Reports what each answer cost
 
